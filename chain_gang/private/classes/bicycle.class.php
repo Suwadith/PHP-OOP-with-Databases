@@ -2,6 +2,66 @@
 
 class Bicycle {
 
+  // ------ START OF ACTIVE RECODE CODE ------------ 
+
+  protected static $database;
+
+  public static function set_database($database) {
+    self::$database = $database;
+  }
+
+  public static function find_by_sql($sql) {
+    $result = self::$database->query($sql);
+    if(!$result) {
+      exit("Database query failed.");
+    }
+
+    // results into objects
+    
+    $object_array = [];
+    while($record = $result->fetch_assoc()) {
+      $object_array[] = self::instantiate($record);
+      // print_r($object_array);
+    }
+
+    $result->free();
+    // print_r($object_array);
+    return $object_array;
+  }
+
+  public static function find_all() {
+    $sql = "SELECT * FROM bicycle";
+    return self::find_by_sql($sql);
+  }
+
+  public static function find_by_id($id) {
+    $sql = "SELECT * FROM bicycle ";
+    $sql .= "WHERE id='" . self::$database->escape_string($id) . "'";
+    $obj_array = self::find_by_sql($sql);
+    if(!empty($obj_array)) {
+      return array_shift($obj_array);
+    } else {
+      return false;
+    }
+  }
+
+  protected static function instantiate($record) {
+    $object = new self;
+    // Could also manually assign values to properties
+    // But automatic assignment is easier and re-usable
+    foreach($record as $property => $value) {
+      if(property_exists($object, $property)) {
+        $object->$property = $value; // $property is a dynamic variable which will change according to the properties of the Bicycle objects (brand, model, etc.)
+      }
+    }
+    // print_r($object);
+    return $object;
+    
+  }
+
+  // ------ end OF ACTIVE RECODE CODE ------------ 
+
+  public $id;
   public $brand;
   public $model;
   public $year;
@@ -44,6 +104,10 @@ class Bicycle {
     //     $this->$k = $v;
     //   }
     // }
+  }
+
+  public function name() {
+    return "{$this->brand} {$this->model} {$this->year}";
   }
 
   public function weight_kg() {
