@@ -6,6 +6,8 @@ class Bicycle {
 
   protected static $database;
 
+  protected static $db_columns = ['id', 'brand', 'model', 'year', 'category', 'color', 'description', 'gender', 'price', 'weight_kg', 'condition_id'];  
+
   public static function set_database($database) {
     self::$database = $database;
   }
@@ -57,6 +59,43 @@ class Bicycle {
     // print_r($object);
     return $object;
     
+  }
+
+  public function create() {
+    $attributes = $this->attributes();
+    $sql = "INSERT INTO bicycle ";
+    $sql .= "(";
+    // $sql .= "brand, model, year, category, color, description, gender, price, weight_kg, condition_id";
+    $sql .= join(', ', array_keys($attributes));
+    $sql .= ") VALUES ('";
+    $sql .= join("', '", array_values($attributes));
+    // $sql .= "'" . $this->brand . "', ";
+    // $sql .= "'" . $this->model . "', ";
+    // $sql .= "'" . $this->year . "', ";
+    // $sql .= "'" . $this->category . "', ";
+    // $sql .= "'" . $this->color . "', ";
+    // $sql .= "'" . $this->description . "', ";
+    // $sql .= "'" . $this->gender . "', ";
+    // $sql .= "'" . $this->price . "', ";
+    // $sql .= "'" . $this->weight_kg . "', ";
+    // $sql .= "'" . $this->condition_id . "'";
+    $sql .= "')";
+    $result = self::$database->query($sql);
+    if($result) {
+      $this->id = self::$database->insert_id;
+    }
+    return $result;
+  }
+
+  public function attributes() {
+    $attributes = [];
+    foreach(self::$db_columns as $column) {
+      if($column == 'id') {
+        continue;
+      }
+      $attributes[$column] = $this->$column;
+    }
+    return $attributes;
   }
 
   // ------ end OF ACTIVE RECODE CODE ------------ 
