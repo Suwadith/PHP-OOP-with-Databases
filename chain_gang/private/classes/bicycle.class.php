@@ -8,6 +8,8 @@ class Bicycle {
 
   protected static $db_columns = ['id', 'brand', 'model', 'year', 'category', 'color', 'description', 'gender', 'price', 'weight_kg', 'condition_id'];  
 
+  public $errors = [];
+
   public static function set_database($database) {
     self::$database = $database;
   }
@@ -61,8 +63,25 @@ class Bicycle {
     
   }
 
-  public function create() {
-    $attributes = $this->attributes();
+  protected function validate() {
+    $this->errors = [];
+    if(is_blank($this->brand)) {
+      $this->errors[] = "Brand cannot be blank.";
+    }
+    if(is_blank($this->model)) {
+      $this->errors[] = "Model cannot be blank.";
+    }
+    return $this->errors;
+  }
+
+  protected function create() {
+
+    $this->validate();
+    if(!empty($this->errors)) {
+      return false;
+    }
+
+    $attributes = $this->sanitized_attributes();
     $sql = "INSERT INTO bicycle ";
     $sql .= "(";
     // $sql .= "brand, model, year, category, color, description, gender, price, weight_kg, condition_id";
@@ -87,6 +106,43 @@ class Bicycle {
     return $result;
   }
 
+  protected function update() {
+
+    $this->validate();
+    if(!empty($this->errors)) {
+      return false;
+    }
+
+    $attributes = $this->sanitized_attributes();
+    $attribute_pairs = [];
+    foreach($attributes as $key => $value) {
+      $attribute_pairs[] = "{$key}='{$value}'";
+    }
+    $sql = "UPDATE bicycle SET ";
+    $sql .= join(', ', $attribute_pairs);
+    $sql .= " WHERE id='" . self::$database->escape_string($this->id) . "' ";
+    $sql .= "LIMIT 1";
+    $result = self::$database->query($sql);
+    return $result;
+  }
+
+  public function save() {
+    // A new record will not have an ID yet
+    if (isset($this->id)) {
+      return $this->update();
+    } else {
+      return $this->create();
+    }
+  }
+
+  public function merge_attributes($args=[]) {
+    foreach($args as $key => $value) {
+      if(property_exists($this, $key) && !is_null($value)) { // checks if the attribute is avaiable & only updates if the form field is not null.
+        $this->$key = $value;
+      }
+    }
+  }
+
   public function attributes() {
     $attributes = [];
     foreach(self::$db_columns as $column) {
@@ -96,6 +152,14 @@ class Bicycle {
       $attributes[$column] = $this->$column;
     }
     return $attributes;
+  }
+
+  protected function sanitized_attributes() {
+    $sanitized = [];
+    foreach($this->attributes() as $key => $value) {
+      $sanitized[$key] = self::$database->escape_string($value);
+    }
+    return $sanitized;
   }
 
   // ------ end OF ACTIVE RECODE CODE ------------ 
@@ -109,8 +173,8 @@ class Bicycle {
   public $description;
   public $gender;
   public $price;
-  protected $weight_kg;
-  protected $condition_id;
+  public $weight_kg;
+  public $condition_id;
 
   public const CATEGORIES = ['Road', 'Mountain', 'Hybrid', 'Cruiser', 'City', 'BMX'];
 
