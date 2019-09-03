@@ -86,20 +86,9 @@ class DatabaseObject
         $attributes = $this->sanitized_attributes();
         $sql = "INSERT INTO " . static::$table_name . " ";
         $sql .= "(";
-        // $sql .= "brand, model, year, category, color, description, gender, price, weight_kg, condition_id";
         $sql .= join(', ', array_keys($attributes));
         $sql .= ") VALUES ('";
         $sql .= join("', '", array_values($attributes));
-        // $sql .= "'" . $this->brand . "', ";
-        // $sql .= "'" . $this->model . "', ";
-        // $sql .= "'" . $this->year . "', ";
-        // $sql .= "'" . $this->category . "', ";
-        // $sql .= "'" . $this->color . "', ";
-        // $sql .= "'" . $this->description . "', ";
-        // $sql .= "'" . $this->gender . "', ";
-        // $sql .= "'" . $this->price . "', ";
-        // $sql .= "'" . $this->weight_kg . "', ";
-        // $sql .= "'" . $this->condition_id . "'";
         $sql .= "')";
         $result = self::$database->query($sql);
         if ($result) {
@@ -142,7 +131,7 @@ class DatabaseObject
     public function merge_attributes($args = [])
     {
         foreach ($args as $key => $value) {
-            if (property_exists($this, $key) && !is_null($value)) { // checks if the attribute is avaiable & only updates if the form field is not null.
+            if (property_exists($this, $key) && !is_null($value)) { // checks if the attribute is available & only updates if the form field is not null.
                 $this->$key = $value;
             }
         }
@@ -178,7 +167,7 @@ class DatabaseObject
         return $result;
 
         // After deleting the instance of the object will still exists,
-        // even though the databse record does not.
+        // even though the database record does not.
         // This can be useful, as in:
         // echo $user->name . "was deleted";
         // but we can't use $user->update() after
