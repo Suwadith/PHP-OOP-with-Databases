@@ -39,6 +39,14 @@ class DatabaseObject
         return static::find_by_sql($sql);
     }
 
+    public static function count_all()
+    {
+        $sql = "SELECT COUNT(*) FROM " . static::$table_name;
+        $result_set = self::$database->query($sql);
+        $row = $result_set->fetch_array();
+        return array_shift($row);
+    }
+
     public static function find_by_id($id)
     {
         $sql = "SELECT * FROM " . static::$table_name . " ";

@@ -5,9 +5,20 @@ require_login();
 ?>
 
 <?php
+
+$current_page = $_GET['page'] ?? 1;
+$per_page =  5;
+$total_count = Admin::count_all();
+
+$pagination = new Pagination($current_page, $per_page, $total_count);
   
 // Find all admins
-$admins = Admin::find_all();
+//$admins = Admin::find_all();
+
+$sql = "SELECT * FROM admins ";
+$sql .= "LIMIT {$per_page} ";
+$sql .= "OFFSET {$pagination->offset()}";
+$admins = Admin::find_by_sql($sql);
   
 ?>
 <?php $page_title = 'Admins'; ?>
@@ -46,6 +57,14 @@ $admins = Admin::find_all();
     	  </tr>
       <?php } ?>
   	</table>
+
+      <?php
+
+      $url = url_for('/staff/admins/index.php');
+
+      echo $pagination->page_links($url);
+
+      ?>
 
   </div>
 
